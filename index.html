@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Casino Night 🎰</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- ═══ SPLASH SCREEN ═══ -->
+  <div id="splash-screen" class="screen">
+    <h1 class="splash-title">🎰 Casino Night</h1>
+    <p class="splash-sub">Spin to win. The house doesn't always win.</p>
+    <p id="status-text" class="status-text">Connecting…</p>
+
+    <button id="auth-btn" class="btn btn-discord hidden">
+      🔐 Authorize with Discord
+    </button>
+
+    <div class="name-row">
+      <input
+        id="name-input"
+        class="input hidden"
+        type="text"
+        placeholder="Enter your name…"
+        maxlength="30"
+      />
+      <button id="submit-name" class="btn btn-primary hidden">Play</button>
+    </div>
+  </div>
+
+  <!-- ═══ GAME SCREEN ═══ -->
+  <div id="game-screen" class="screen hidden">
+    <div class="game-layout">
+      <!-- Top bar -->
+      <div class="top-bar">
+        <h2>🎰 Casino Night</h2>
+        <div class="player-info">
+          <span id="player-name" class="name">—</span>
+          <span id="player-balance" class="balance">1000</span>
+        </div>
+      </div>
+
+      <!-- Slot machine area -->
+      <div class="slot-area">
+        <div class="slot-machine">
+          <div id="reel-row-0" class="reel-row reel-row-0"></div>
+          <div id="reel-row-1" class="reel-row reel-row-1"></div>
+          <div id="reel-row-2" class="reel-row reel-row-2"></div>
+        </div>
+
+        <div class="slot-controls">
+          <p class="bet-display">Bet: <span id="bet-amount">10</span> credits</p>
+          <button id="spin-btn" class="btn btn-spin">🎰 SPIN!</button>
+          <p id="spin-result" class="spin-result"></p>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="leaderboard-panel" id="leaderboard-panel">
+          <h3>🏆 Leaderboard</h3>
+          <div id="leaderboard">
+            <p class="empty-state">No other players yet…</p>
+          </div>
+        </div>
+
+        <div class="chat-panel" id="chat-panel">
+          <h3>💬 Live Chat</h3>
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-input-row">
+            <input
+              id="chat-input"
+              type="text"
+              placeholder="Type a message…"
+              maxlength="200"
+            />
+            <button id="chat-send">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
