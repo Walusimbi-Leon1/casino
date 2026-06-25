@@ -110,6 +110,9 @@ async function enterGame(u: UserInfo): Promise<void> {
   UI.showGame();
   UI.setActiveMachine(selectedMachine.id);
 
+  // Initialise empty reels
+  UI.renderReels([], [], selectedMachine.columns, selectedMachine.rows);
+
   // Start heartbeat
   heartbeatTimer = setInterval(() => {
     if (user) heartbeat(user.id);
