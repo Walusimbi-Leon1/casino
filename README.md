@@ -53,6 +53,8 @@ Built with TypeScript + Vite + Firebase Realtime Database.
 
 ### 3. Cloudflare Pages
 
+**Option A — Git integration (recommended):**
+
 1. Connect your Git repo (`Walusimbi-Leon1/casino`) in Cloudflare Dashboard
 2. Use these build settings:
 
@@ -72,6 +74,20 @@ Built with TypeScript + Vite + Firebase Realtime Database.
 | `DISCORD_REDIRECT_URI` | Your Pages URL, same as OAuth redirect |
 
 4. Deploy — Pages will automatically detect `functions/` and serve the API endpoint
+
+**Option B — Wrangler CLI:**
+
+```bash
+npm run preview   # builds + starts local wrangler dev server
+npx wrangler deploy   # deploy to Cloudflare
+```
+
+Set environment variables via:
+```bash
+npx wrangler secret put DISCORD_CLIENT_ID
+npx wrangler secret put DISCORD_CLIENT_SECRET
+npx wrangler secret put DISCORD_REDIRECT_URI
+```
 
 ### 4. Discord Activity URL
 
