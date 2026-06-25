@@ -53,8 +53,17 @@ Built with TypeScript + Vite + Firebase Realtime Database.
 
 ### 3. Cloudflare Pages
 
-1. Connect your Git repo or upload the `dist/` folder
-2. Go to **Settings** → **Environment variables** and add:
+1. Connect your Git repo (`Walusimbi-Leon1/casino`) in Cloudflare Dashboard
+2. Use these build settings:
+
+| Setting | Value |
+|---|---|
+| Framework preset | **None** |
+| Build command | `npm run build` |
+| Build output directory | `dist/` |
+| Root directory | *(leave blank)* |
+
+3. Go to **Settings** → **Environment variables** and add:
 
 | Variable | Value |
 |---|---|
@@ -62,7 +71,7 @@ Built with TypeScript + Vite + Firebase Realtime Database.
 | `DISCORD_CLIENT_SECRET` | *(your generated secret)* |
 | `DISCORD_REDIRECT_URI` | Your Pages URL, same as OAuth redirect |
 
-3. Deploy — Pages will automatically detect `functions/` and serve the API
+4. Deploy — Pages will automatically detect `functions/` and serve the API endpoint
 
 ### 4. Discord Activity URL
 
