@@ -7,10 +7,16 @@
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
+  <!-- ═══ JACKPOT BANNER ═══ -->
+  <div id="jackpot-banner" class="jackpot-banner hidden">
+    <span class="jackpot-text">💰 JACKPOT! 💰</span>
+  </div>
+
   <!-- ═══ SPLASH SCREEN ═══ -->
   <div id="splash-screen" class="screen">
+    <div class="splash-glow"></div>
     <h1 class="splash-title">🎰 Casino Night</h1>
-    <p class="splash-sub">Spin to win. The house doesn't always win.</p>
+    <p class="splash-sub">Las Vegas at your fingertips</p>
     <p id="status-text" class="status-text">Connecting…</p>
 
     <button id="auth-btn" class="btn btn-discord hidden">
@@ -34,25 +40,46 @@
     <div class="game-layout">
       <!-- Top bar -->
       <div class="top-bar">
-        <h2>🎰 Casino Night</h2>
+        <h2 class="neon-title">🎰 Casino Night</h2>
         <div class="player-info">
           <span id="player-name" class="name">—</span>
           <span id="player-balance" class="balance">1000</span>
         </div>
       </div>
 
+      <!-- Machine selector -->
+      <div id="machine-selector" class="machine-selector"></div>
+
       <!-- Slot machine area -->
       <div class="slot-area">
-        <div class="slot-machine">
-          <div id="reel-row-0" class="reel-row reel-row-0"></div>
-          <div id="reel-row-1" class="reel-row reel-row-1"></div>
-          <div id="reel-row-2" class="reel-row reel-row-2"></div>
+        <div class="slot-machine" id="slot-machine">
+          <div class="reel-frame">
+            <div id="reel-container" class="reel-container"></div>
+          </div>
         </div>
 
         <div class="slot-controls">
-          <p class="bet-display">Bet: <span id="bet-amount">10</span> credits</p>
+          <div class="bet-controls">
+            <button id="bet-down" class="btn btn-sm">−</button>
+            <span class="bet-display">Bet: <span id="bet-amount">10</span></span>
+            <button id="bet-up" class="btn btn-sm">+</button>
+          </div>
           <button id="spin-btn" class="btn btn-spin">🎰 SPIN!</button>
           <p id="spin-result" class="spin-result"></p>
+        </div>
+
+        <div class="volume-control">
+          <span>🔈</span>
+          <input
+            type="range"
+            id="volume-slider"
+            min="0"
+            max="1"
+            step="0.05"
+            value="0.5"
+          />
+          <span id="volume-label">50%</span>
+          <span>🔊</span>
         </div>
       </div>
 

@@ -1,4 +1,8 @@
-/* ── Reset & Base ──────────────────────────────────── */
+/* ═══════════════════════════════════════════════════
+   CASINO NIGHT 🎰  —  Las Vegas Neon Edition
+   ═══════════════════════════════════════════════════ */
+
+/* ── Reset & Variables ────────────────────────────── */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -7,23 +11,26 @@
 }
 
 :root {
-  --bg: #0a0e1a;
-  --surface: #141b2d;
-  --surface2: #1c2541;
-  --accent: #f0c040;
-  --accent2: #e94560;
-  --green: #2ecc71;
-  --red: #e74c3c;
-  --text: #e0e0e0;
-  --text-dim: #8892a0;
-  --radius: 12px;
-  --radius-sm: 6px;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --bg: #0a0015;
+  --bg2: #120022;
+  --surface: #1a0030;
+  --surface2: #2a0048;
+  --neon-gold: #ffd700;
+  --neon-red: #ff0040;
+  --neon-blue: #00d4ff;
+  --neon-green: #39ff14;
+  --neon-purple: #bf00ff;
+  --text: #e8d4ff;
+  --text-dim: #8a6f9a;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --glow-gold: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.3);
+  --glow-red: 0 0 10px rgba(255, 0, 64, 0.6), 0 0 30px rgba(255, 0, 64, 0.3);
 }
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Segoe UI', 'Arial', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
@@ -39,7 +46,7 @@ html, body {
   height: 100%;
   width: 100%;
   padding: 16px;
-  transition: opacity 0.3s;
+  position: relative;
 }
 
 .screen.hidden {
@@ -48,29 +55,50 @@ html, body {
 
 /* ── Splash ───────────────────────────────────────── */
 
+.splash-glow {
+  position: absolute;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
 .splash-title {
-  font-size: clamp(2rem, 8vw, 4rem);
-  font-weight: 800;
-  background: linear-gradient(135deg, #f0c040, #e94560);
+  font-size: clamp(2.5rem, 10vw, 5rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--neon-gold), var(--neon-red), var(--neon-purple));
+  background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: shimmer 3s ease-in-out infinite;
   margin-bottom: 8px;
   text-align: center;
+  text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .splash-sub {
   color: var(--text-dim);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   margin-bottom: 28px;
   text-align: center;
+  letter-spacing: 2px;
 }
 
 .status-text {
-  color: var(--accent);
+  color: var(--neon-gold);
   font-size: 0.9rem;
   margin-bottom: 20px;
   min-height: 1.2em;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
 }
 
 /* ── Buttons ──────────────────────────────────────── */
@@ -85,12 +113,12 @@ html, body {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
 }
 
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  filter: brightness(1.15);
 }
 
 .btn:active {
@@ -98,26 +126,44 @@ html, body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #f0c040, #e2a820);
-  color: #1a1a2e;
+  background: linear-gradient(135deg, var(--neon-gold), #b8960a);
+  color: #0a0015;
 }
 
 .btn-discord {
   background: #5865f2;
   color: #fff;
+  box-shadow: 0 0 12px rgba(88, 101, 242, 0.4);
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 1.2rem;
+  background: var(--surface2);
+  color: var(--neon-gold);
+  border: 1px solid var(--neon-gold);
+}
+
+.btn-sm:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .btn-spin {
-  background: linear-gradient(135deg, #e94560, #c23152);
+  background: linear-gradient(135deg, var(--neon-red), #b00030);
   color: #fff;
-  font-size: 1.1rem;
-  padding: 14px 40px;
-  letter-spacing: 1px;
+  font-size: 1.2rem;
+  padding: 16px 50px;
+  letter-spacing: 2px;
+  border-radius: var(--radius);
+  box-shadow: var(--glow-red);
+  text-transform: uppercase;
 }
 
 .btn-spin:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
   transform: none !important;
 }
 
@@ -131,11 +177,12 @@ html, body {
   color: var(--text);
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input:focus {
-  border-color: var(--accent);
+  border-color: var(--neon-gold);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .name-row {
@@ -149,17 +196,54 @@ html, body {
   min-width: 180px;
 }
 
+/* ── Jackpot Banner ───────────────────────────────── */
+
+.jackpot-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  text-align: center;
+  padding: 20px;
+  pointer-events: none;
+}
+
+.jackpot-text {
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+}
+
+.jackpot-flash .jackpot-text {
+  animation: jackpotPulse 0.4s ease-in-out 6;
+}
+
+@keyframes jackpotPulse {
+  0%, 100% {
+    color: var(--neon-gold);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    color: #fff;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 80px rgba(255, 215, 0, 0.6), 0 0 120px rgba(255, 215, 0, 0.3);
+    transform: scale(1.1);
+  }
+}
+
 /* ── Game Layout ──────────────────────────────────── */
 
 .game-layout {
   display: grid;
   grid-template-columns: 1fr 300px;
-  grid-template-rows: auto 1fr auto;
-  gap: 12px;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 10px;
   height: 100%;
   max-width: 1200px;
   width: 100%;
-  padding: 12px;
+  padding: 8px;
 }
 
 /* ── Top bar ──────────────────────────────────────── */
@@ -169,17 +253,19 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
-  background: var(--surface);
+  padding: 10px 18px;
+  background: linear-gradient(135deg, var(--surface), var(--surface2));
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: var(--radius);
 }
 
-.top-bar h2 {
-  font-size: 1.2rem;
-  background: linear-gradient(135deg, #f0c040, #e94560);
+.neon-title {
+  font-size: 1.3rem;
+  background: linear-gradient(135deg, var(--neon-gold), var(--neon-red));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
 }
 
 .player-info {
@@ -190,14 +276,69 @@ html, body {
 
 .player-info .name {
   font-weight: 600;
+  color: var(--neon-blue);
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
 }
 
 .player-info .balance {
-  background: var(--surface2);
-  padding: 4px 12px;
+  background: linear-gradient(135deg, var(--surface2), var(--surface));
+  border: 1px solid var(--neon-gold);
+  padding: 4px 14px;
   border-radius: var(--radius-sm);
   font-weight: 700;
-  color: var(--accent);
+  color: var(--neon-gold);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+/* ── Machine Selector ─────────────────────────────── */
+
+.machine-selector {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.machine-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.machine-btn:hover {
+  border-color: var(--neon-gold);
+  color: var(--text);
+}
+
+.machine-btn.active {
+  background: linear-gradient(135deg, var(--surface2), var(--surface));
+  border-color: var(--neon-gold);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+}
+
+.machine-btn.active .machine-name {
+  color: var(--neon-gold);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+.machine-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.machine-desc {
+  font-size: 0.7rem;
+  opacity: 0.7;
 }
 
 /* ── Slot Machine ─────────────────────────────────── */
@@ -208,53 +349,92 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
+  background: linear-gradient(180deg, var(--bg2), var(--surface));
+  border: 1px solid rgba(255, 215, 0, 0.15);
   border-radius: var(--radius);
-  padding: 24px;
-  gap: 16px;
+  padding: 12px;
+  gap: 10px;
 }
 
 .slot-machine {
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  border: 3px solid var(--accent);
+  background: linear-gradient(180deg, #1a0025 0%, #0d0012 100%);
+  border: 2px solid var(--neon-gold);
   border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: 0 0 30px rgba(240, 192, 64, 0.2);
+  padding: 16px;
+  box-shadow: var(--glow-gold), inset 0 0 60px rgba(255, 215, 0, 0.05);
+  position: relative;
+  min-width: 260px;
+}
+
+/* Animated neon border */
+.slot-machine::before {
+  content: '';
+  position: absolute;
+  top: -3px; left: -3px; right: -3px; bottom: -3px;
+  border-radius: calc(var(--radius) + 3px);
+  background: linear-gradient(45deg,
+    var(--neon-gold), var(--neon-red), var(--neon-purple),
+    var(--neon-blue), var(--neon-gold), var(--neon-red));
+  background-size: 400% 400%;
+  z-index: -1;
+  animation: neonBorder 6s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes neonBorder {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.reel-frame {
+  background: #000;
+  border-radius: calc(var(--radius) - 4px);
+  padding: 8px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.reel-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .reel-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
-  margin: 4px 0;
 }
 
 .reel-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
-  background: var(--surface2);
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(180deg, var(--surface2), var(--bg2));
+  border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: var(--radius-sm);
-  font-size: 2.5rem;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-  transition: background 0.2s;
+  font-size: 2.2rem;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+/* Center row highlight */
+.reel-row:nth-child(2) .reel-cell {
+  border-color: rgba(255, 215, 0, 0.4);
 }
 
 .reel-cell.winning {
-  background: #2ecc71;
-  box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
-  animation: pulse-win 0.5s ease-in-out infinite alternate;
+  background: linear-gradient(135deg, #1a4a1a, #0d2a0d);
+  border-color: var(--neon-green);
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.5), inset 0 0 10px rgba(57, 255, 20, 0.2);
+  animation: cellPulse 0.4s ease-in-out infinite alternate;
 }
 
-@keyframes pulse-win {
+@keyframes cellPulse {
   from { transform: scale(1); }
-  to { transform: scale(1.08); }
-}
-
-.reel-row-1 .reel-cell {
-  border: 2px solid var(--accent);
+  to { transform: scale(1.06); box-shadow: 0 0 20px rgba(57, 255, 20, 0.7); }
 }
 
 /* ── Controls ─────────────────────────────────────── */
@@ -263,42 +443,90 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  width: 100%;
+}
+
+.bet-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .bet-display {
-  font-size: 0.9rem;
-  color: var(--text-dim);
+  font-size: 1rem;
+  color: var(--text);
 }
 
 .bet-display span {
-  color: var(--accent);
+  color: var(--neon-gold);
   font-weight: 700;
+  font-size: 1.1rem;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }
 
 .spin-result {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   min-height: 1.5em;
   text-align: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
 }
 
 .spin-result.win {
-  color: var(--green);
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
+  background: rgba(57, 255, 20, 0.08);
 }
 
 .spin-result.lose {
   color: var(--text-dim);
 }
 
+/* ── Volume ────────────────────────────────────────── */
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.volume-control input[type="range"] {
+  width: 100px;
+  appearance: none;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--neon-gold);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+
+#volume-label {
+  min-width: 32px;
+  text-align: center;
+}
+
 /* ── Sidebar ──────────────────────────────────────── */
 
 .sidebar {
   grid-column: 2 / 3;
-  grid-row: 2 / 4;
+  grid-row: 3 / 5;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   overflow: hidden;
 }
 
@@ -306,6 +534,7 @@ html, body {
 
 .leaderboard-panel {
   background: var(--surface);
+  border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: var(--radius);
   padding: 12px;
   flex-shrink: 0;
@@ -316,7 +545,8 @@ html, body {
 .leaderboard-panel h3 {
   font-size: 0.95rem;
   margin-bottom: 8px;
-  color: var(--accent);
+  color: var(--neon-gold);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }
 
 .lb-row {
@@ -326,10 +556,12 @@ html, body {
   padding: 4px 6px;
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
+  transition: background 0.2s;
 }
 
 .lb-row.lb-me {
-  background: rgba(240, 192, 64, 0.15);
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .lb-rank {
@@ -347,7 +579,7 @@ html, body {
 
 .lb-balance {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--neon-gold);
 }
 
 .empty-state {
@@ -360,6 +592,7 @@ html, body {
 
 .chat-panel {
   background: var(--surface);
+  border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: var(--radius);
   padding: 12px;
   display: flex;
@@ -371,7 +604,8 @@ html, body {
 .chat-panel h3 {
   font-size: 0.95rem;
   margin-bottom: 8px;
-  color: var(--accent);
+  color: var(--neon-blue);
+  text-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
 }
 
 .chat-messages {
@@ -388,16 +622,19 @@ html, body {
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
-  background: var(--surface2);
+  background: var(--bg2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .chat-msg.chat-me {
-  background: rgba(240, 192, 64, 0.1);
+  background: rgba(0, 212, 255, 0.06);
+  border-color: rgba(0, 212, 255, 0.15);
 }
 
 .chat-author {
   font-weight: 600;
-  color: var(--accent);
+  font-size: 0.8rem;
+  color: var(--neon-gold);
   margin-right: 6px;
 }
 
@@ -419,19 +656,20 @@ html, body {
   color: var(--text);
   font-size: 0.85rem;
   outline: none;
+  transition: border-color 0.2s;
 }
 
 .chat-input-row input:focus {
-  border-color: var(--accent);
+  border-color: var(--neon-blue);
 }
 
 .chat-input-row button {
   padding: 8px 14px;
-  background: var(--accent);
-  color: #1a1a2e;
+  background: linear-gradient(135deg, var(--neon-gold), #b8960a);
+  color: #0a0015;
   border: none;
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   font-size: 0.85rem;
 }
@@ -449,19 +687,32 @@ html, body {
   border-radius: 2px;
 }
 
+/* ── Winning confetti (CSS-only) ───────────────────── */
+
+@keyframes confettiFall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+.win + .spin-result::after {
+  content: '🎉';
+  display: inline-block;
+  animation: confettiFall 2s ease-out;
+}
+
 /* ── Responsive ───────────────────────────────────── */
 
 @media (max-width: 700px) {
   .game-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 8px;
+    grid-template-rows: auto auto auto auto auto;
+    gap: 6px;
   }
   .sidebar {
     grid-column: 1 / 2;
     grid-row: auto;
     flex-direction: row;
-    max-height: 180px;
+    max-height: 160px;
   }
   .leaderboard-panel,
   .chat-panel {
@@ -469,9 +720,18 @@ html, body {
     max-height: 100%;
   }
   .reel-cell {
+    width: 52px;
+    height: 52px;
+    font-size: 1.5rem;
+  }
+  .slot-machine {
+    padding: 10px;
+  }
+  .machine-selector {
+    flex-direction: column;
+  }
+  .volume-control input[type="range"] {
     width: 60px;
-    height: 60px;
-    font-size: 1.8rem;
   }
 }
 

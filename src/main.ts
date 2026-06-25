@@ -1,4 +1,4 @@
-import type { UserInfo, Player, ChatMessage } from './types';
+import type { UserInfo, Player, ChatMessage, MachineConfig } from './types';
 import {
   initDiscord,
   authorizeDiscord,
@@ -19,22 +19,26 @@ import {
   listenChat,
   cleanup,
 } from './firebase';
-import { spin, DEFAULT_BET } from './game';
+import { spin, MACHINES, STARTING_BALANCE } from './game';
+import * as Sound from './sound';
 import * as UI from './ui';
 import { setMessages } from './chat';
 
 // ── Bootstrap ───────────────────────────────────────
 
 let user: UserInfo | null = null;
-let playerBalance = 1000;
+let playerBalance = STARTING_BALANCE;
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 let playerUnsub: (() => void) | null = null;
 let chatUnsub: (() => void) | null = null;
 
+// Machine state
+let selectedMachine: MachineConfig = MACHINES[0]; // Classic 3-reel
+let currentBet = selectedMachine.defaultBet;
+
 async function main(): Promise<void> {
   UI.setStatus('Connecting…');
   UI.showSplash();
-  UI.setBet(DEFAULT_BET);
 
   // Wire callbacks
   UI.setCallbacks({
@@ -42,24 +46,31 @@ async function main(): Promise<void> {
     onSubmitName: handleNameSubmit,
     onSpin: handleSpin,
     onChatSend: handleChatSend,
+    onMachineChange: handleMachineChange,
+    onBetChange: handleBetChange,
+    onVolumeChange: (v) => Sound.setVolume(v),
   });
+
+  // Setup volume control
+  UI.setupVolume();
+  UI.setVolume(Sound.getVolume());
+
+  // Render machine selector (will appear after entering game)
+  UI.renderMachineSelector(MACHINES, selectedMachine.id);
 
   // Try Discord SDK
   const discordOk = await initDiscord();
   if (!isInDiscord()) {
-    // Browser mode — show name input
     UI.setStatus('Playing in browser — enter a name to start');
     UI.setSplashMode('browser');
     return;
   }
 
   if (discordOk && getUser()) {
-    // Already authed
     await enterGame(getUser()!);
     return;
   }
 
-  // In Discord iframe but needs authorize
   UI.setStatus('Authorizing with Discord…');
   UI.setSplashMode('discord');
 }
@@ -90,13 +101,14 @@ async function enterGame(u: UserInfo): Promise<void> {
   user = u;
   await registerPlayer(u);
 
-  // Fetch current balance
   const db = getDatabase();
   const snap = await get(ref(db, `casino/players/${u.id}/balance`));
-  playerBalance = snap.exists() ? snap.val() : 1000;
+  playerBalance = snap.exists() ? snap.val() : STARTING_BALANCE;
 
   UI.setPlayer(u, playerBalance);
+  UI.renderBet(currentBet, selectedMachine.minBet, selectedMachine.maxBet);
   UI.showGame();
+  UI.setActiveMachine(selectedMachine.id);
 
   // Start heartbeat
   heartbeatTimer = setInterval(() => {
@@ -114,8 +126,38 @@ async function enterGame(u: UserInfo): Promise<void> {
     UI.renderChat();
   });
 
-  // Cleanup on pagehide (Discord iframe lifecycle)
   window.addEventListener('pagehide', handleCleanup);
+}
+
+// ── Machine selector handler ────────────────────────
+
+function handleMachineChange(machineId: string): void {
+  const machine = MACHINES.find((m) => m.id === machineId);
+  if (!machine) return;
+  selectedMachine = machine;
+
+  // Clamp current bet to new machine's range
+  currentBet = Math.max(machine.minBet, Math.min(machine.maxBet, currentBet));
+
+  UI.setActiveMachine(machineId);
+  UI.renderBet(currentBet, machine.minBet, machine.maxBet);
+
+  // Clear reels and result
+  UI.renderReels([], [], machine.columns, machine.rows);
+  UI.showResult(0, null, null);
+
+  Sound.playCoin();
+}
+
+// ── Bet handler ─────────────────────────────────────
+
+function handleBetChange(newBet: number): void {
+  currentBet = Math.max(
+    selectedMachine.minBet,
+    Math.min(selectedMachine.maxBet, newBet)
+  );
+  UI.renderBet(currentBet, selectedMachine.minBet, selectedMachine.maxBet);
+  Sound.playCoin();
 }
 
 // ── Spin handler ────────────────────────────────────
@@ -123,32 +165,63 @@ async function enterGame(u: UserInfo): Promise<void> {
 let isSpinning = false;
 
 async function handleSpin(): Promise<void> {
-  if (!user || isSpinning || playerBalance < DEFAULT_BET) return;
+  if (!user || isSpinning || playerBalance < currentBet) {
+    if (playerBalance < currentBet) {
+      Sound.playNoBet();
+      UI.showResult(0, 'Not enough credits! 💸', null);
+    }
+    return;
+  }
   isSpinning = true;
   UI.setSpinning(true);
 
   // Deduct bet
-  playerBalance -= DEFAULT_BET;
+  playerBalance -= currentBet;
   UI.updateBalance(playerBalance);
 
+  Sound.playLever();
+  Sound.startSpinSound();
+
   // Generate spin result
-  const result = spin();
-  const winCredits = result.winAmount * DEFAULT_BET;
+  const result = spin(selectedMachine);
+  const winCredits = result.winAmount * currentBet;
+
+  const { columns, rows } = selectedMachine;
 
   // Animate reels
-  UI.animateSpin(result.symbols, result.winIndices, async () => {
+  UI.animateSpin(result.symbols, result.winningCells, columns, rows, async () => {
+    Sound.stopSpinSound();
+
+    // Staggered reel-stop sounds
+    for (let i = 0; i < columns; i++) {
+      setTimeout(() => Sound.playReelStop(), i * 100);
+    }
+
     // Show result
-    UI.showResult(winCredits, result.winType);
+    UI.showResult(winCredits, result.winType, result.paylineName);
+
+    // Play appropriate sound
+    if (winCredits > 0) {
+      if (winCredits >= currentBet * 50) {
+        Sound.playBigWin();
+        UI.flashJackpot();
+      } else {
+        Sound.playWin(winCredits / currentBet);
+      }
+    } else {
+      Sound.playLose();
+    }
 
     // Update balance
     if (winCredits > 0) {
       playerBalance += winCredits;
       UI.updateBalance(playerBalance);
+      Sound.playCoin();
     }
 
     // Persist
     if (user) {
-      const newBalance = await updateBalance(user.id, winCredits - DEFAULT_BET);
+      const newBalance = await updateBalance(user.id, winCredits - currentBet);
       playerBalance = newBalance;
       UI.updateBalance(newBalance);
     }
@@ -171,6 +244,7 @@ function handleCleanup(): void {
   if (heartbeatTimer) clearInterval(heartbeatTimer);
   if (playerUnsub) playerUnsub();
   if (chatUnsub) chatUnsub();
+  Sound.stopSpinSound();
   if (user) cleanup(user.id);
 }
 

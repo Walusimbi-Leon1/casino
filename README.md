@@ -53,8 +53,6 @@ Built with TypeScript + Vite + Firebase Realtime Database.
 
 ### 3. Cloudflare Pages
 
-**Option A — Git integration (recommended):**
-
 1. Connect your Git repo (`Walusimbi-Leon1/casino`) in Cloudflare Dashboard
 2. Use these build settings:
 
@@ -64,6 +62,10 @@ Built with TypeScript + Vite + Firebase Realtime Database.
 | Build command | `npm run build` |
 | Build output directory | `dist/` |
 | Root directory | *(leave blank)* |
+| **Deploy command** | **(leave empty — do not set this)** |
+
+> ⚠️ Do NOT set a deploy command. Cloudflare Pages auto-deploys from the build output. 
+> A deploy command (like `npx wrangler deploy`) is for Workers, not Pages.
 
 3. Go to **Settings** → **Environment variables** and add:
 
@@ -73,20 +75,15 @@ Built with TypeScript + Vite + Firebase Realtime Database.
 | `DISCORD_CLIENT_SECRET` | *(your generated secret)* |
 | `DISCORD_REDIRECT_URI` | Your Pages URL, same as OAuth redirect |
 
-4. Deploy — Pages will automatically detect `functions/` and serve the API endpoint
+4. **Deploy** — Pages will:
+   - Run `npm run build`
+   - Serve the `dist/` folder as static content
+   - Auto-detect `functions/` and serve the API endpoint
 
-**Option B — Wrangler CLI:**
+### Local preview with Wrangler
 
 ```bash
-npm run preview   # builds + starts local wrangler dev server
-npx wrangler deploy   # deploy to Cloudflare
-```
-
-Set environment variables via:
-```bash
-npx wrangler secret put DISCORD_CLIENT_ID
-npx wrangler secret put DISCORD_CLIENT_SECRET
-npx wrangler secret put DISCORD_REDIRECT_URI
+npm run preview   # builds + starts local wrangler dev server at http://localhost:8788
 ```
 
 ### 4. Discord Activity URL

@@ -17,21 +17,42 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+/** A payline — rows indices (0=top, 1=centre, 2=bottom) to check per column */
+export interface Payline {
+  name: string;
+  cells: number[]; // row index per column, length = columns
+}
+
 /** Symbol configuration for the slot machine */
 export interface SymbolConfig {
   emoji: string;
   name: string;
   weight: number;
-  payout3: number;  // multiplier for 3 matching
-  payout2: number;  // multiplier for 2 matching
+  /** Multiplier keyed by match-count: { 2: 1, 3: 5, 4: 20, 5: 100 } */
+  payouts: Record<number, number>;
 }
 
-/** Result of a spin */
+/** A slot machine variant */
+export interface MachineConfig {
+  id: string;
+  name: string;
+  description: string;
+  columns: number;
+  rows: number;
+  paylines: Payline[];
+  symbols: SymbolConfig[];
+  defaultBet: number;
+  minBet: number;
+  maxBet: number;
+}
+
+/** Result of a spin — one payline win at most (highest) */
 export interface SpinResult {
-  symbols: string[][];  // 3 columns × 3 rows
-  winAmount: number;    // multiplier of bet
-  winType: string | null;
-  winIndices: number[]; // column indices that matched (0,1,2)
+  symbols: string[][];     // [col][row]  (columns × rows)
+  winAmount: number;       // multiplier of bet
+  winType: string | null;  // human-readable description
+  winningCells: string[];  // CSS classes: "col-row" e.g. "0-1", "1-1"
+  paylineName: string | null;
 }
 
 /** Discord auth info */
@@ -39,6 +60,3 @@ export interface UserInfo {
   id: string;
   name: string;
 }
-
-/** Which screen to show */
-export type Screen = 'splash' | 'game';
