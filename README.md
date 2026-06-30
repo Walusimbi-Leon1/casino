@@ -110,6 +110,8 @@ casino/
 │   ├── main.ts             # Bootstrap & orchestration
 │   ├── types.ts            # TypeScript interfaces
 │   ├── discord.ts          # Discord SDK integration
+│   ├── telegram.ts         # Telegram Mini App SDK integration
+│   ├── bot.ts              # Telegram bot API helpers (Stars invoices)
 │   ├── firebase.ts         # Firebase RTDB helpers
 │   ├── game.ts             # Slot machine logic
 │   ├── chat.ts             # In-memory chat state
@@ -117,11 +119,77 @@ casino/
 │   └── style.css           # All styles
 ├── functions/
 │   └── api/
-│       └── exchange.js     # Cloudflare Pages Function (OAuth)
+│       ├── exchange.js     # Discord OAuth token exchange
+│       ├── create-invoice.js # Telegram Stars invoice creator
+│       └── webhook.js      # Telegram bot webhook (/start, payments)
+├── setup-bot.sh            # Bot webhook configuration script
 ├── package.json
 ├── tsconfig.json
 └── vite.config.ts
 ```
+
+## Platform Support
+
+The game runs on **three platforms** automatically:
+
+| Platform | Auth | Payment |
+|----------|------|---------|
+| 🎮 **Telegram** | `Telegram.WebApp.initDataUnsafe.user` | Telegram Stars ⭐ |
+| 🔷 **Discord** | Discord OAuth2 via SDK | (coming soon) |
+| 🌐 **Browser** | Enter a name | None |
+
+It detects the environment at startup and adapts accordingly.
+
+---
+
+## Telegram Mini App Setup
+
+### 1. BotFather
+
+1. Open [@BotFather](https://t.me/BotFather) on Telegram
+2. Send `/mybots` → select your bot → **Bot Settings** → **Menu Button** → Set the Mini App URL to your Cloudflare Pages URL (e.g. `https://casino-8ia.pages.dev`)
+3. Also set: **Bot Settings** → **Payments** → Enable Telegram Stars
+
+### 2. Cloudflare Environment Variables
+
+Add these to your Cloudflare Pages dashboard:
+
+| Variable | Value |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | `8941696472:xxxxx` |
+| `FIREBASE_DATABASE_URL` | `https://studio-1398542564-e4c36-default-rtdb.firebaseio.com` |
+| `TG_MINI_APP_URL` | `https://casino-8ia.pages.dev` |
+
+### 3. Configure Webhook
+
+Run the setup script (from your local machine):
+
+```bash
+chmod +x setup-bot.sh
+./setup-bot.sh 8941696472:xxxxx https://casino-8ia.pages.dev/api/webhook
+```
+
+Or manually:
+
+```bash
+curl -X POST https://api.telegram.org/bot<TOKEN>/setWebhook \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://casino-8ia.pages.dev/api/webhook"}'
+```
+
+### 4. Try It
+
+Open your bot on Telegram → Send `/start` → Tap "Play Casino Night" → Spin the slots!
+
+### How Stars Work
+
+1. Tap ⭐ **Buy Credits** in the game
+2. Choose a package (5⭐ → 1,000cr, 25⭐ → 6,000cr, etc.)
+3. Telegram shows the payment confirmation
+4. You pay with Stars from your Telegram wallet
+5. Credits are added to your account automatically
+
+Stars are Telegram's built-in currency — no Stripe, no fiat. Players buy Stars from Telegram and spend them in your bot. You can cash out Stars via Fragment.com.
 
 ## Slot Machine Specs
 

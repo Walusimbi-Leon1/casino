@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Casino Night 🎰</title>
   <link rel="stylesheet" href="/src/style.css" />
+
+  <!-- Telegram Mini App SDK -->
+  <script src="https://telegram.org/js/telegram-webapp.js"></script>
 </head>
 <body>
   <!-- ═══ JACKPOT BANNER ═══ -->
@@ -40,10 +43,15 @@
     <div class="game-layout">
       <!-- Top bar -->
       <div class="top-bar">
-        <h2 class="neon-title">🎰 Casino Night</h2>
-        <div class="player-info">
-          <span id="player-name" class="name">—</span>
-          <span id="player-balance" class="balance">1000</span>
+        <div class="top-bar-left">
+          <h2 class="neon-title">🎰 Casino Night</h2>
+        </div>
+        <div class="top-bar-right">
+          <button id="close-btn" class="btn btn-close hidden" title="Close game">✕</button>
+          <div class="player-info">
+            <span id="player-name" class="name">—</span>
+            <span id="player-balance" class="balance">1000</span>
+          </div>
         </div>
       </div>
 
@@ -81,6 +89,8 @@
           <span id="volume-label">50%</span>
           <span>🔊</span>
         </div>
+
+        <button id="buy-credits-btn" class="btn btn-buy hidden">⭐ Buy Credits</button>
       </div>
 
       <!-- Sidebar -->
@@ -108,6 +118,9 @@
       </div>
     </div>
   </div>
+
+  <!-- ═══ PRICING MODAL ═══ -->
+  <div id="pricing-modal" class="hidden"></div>
 
   <script type="module" src="/src/main.ts"></script>
 </body>

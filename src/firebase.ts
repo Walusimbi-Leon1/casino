@@ -61,6 +61,21 @@ export async function heartbeat(userId: string): Promise<void> {
   });
 }
 
+/**
+ * Add credits to a player's balance (used by Stars purchases).
+ */
+export async function addCredits(userId: string, amount: number): Promise<number> {
+  const playerRef = ref(db, `${PREFIX}/players/${userId}`);
+  const snap = await get(playerRef);
+  const current = snap.val() as Player;
+  const newBalance = (current?.balance ?? 1000) + amount;
+  await update(playerRef, {
+    balance: newBalance,
+    lastActive: Date.now(),
+  });
+  return newBalance;
+}
+
 export async function updateBalance(userId: string, delta: number): Promise<number> {
   const playerRef = ref(db, `${PREFIX}/players/${userId}`);
   const snap = await get(playerRef);

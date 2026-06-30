@@ -2,9 +2,15 @@ import type { UserInfo, Player, ChatMessage, MachineConfig } from './types';
 import {
   initDiscord,
   authorizeDiscord,
-  getUser,
+  getUser as getDiscordUser,
   isInDiscord,
 } from './discord';
+import {
+  initTelegram,
+  isTelegramWebApp,
+  getTelegramUser,
+  toUserInfo,
+} from './telegram';
 import {
   getDatabase,
   ref,
@@ -14,6 +20,7 @@ import {
   registerPlayer,
   heartbeat,
   updateBalance,
+  addCredits,
   listenPlayers,
   sendMessage,
   listenChat,
@@ -33,8 +40,11 @@ let playerUnsub: (() => void) | null = null;
 let chatUnsub: (() => void) | null = null;
 
 // Machine state
-let selectedMachine: MachineConfig = MACHINES[0]; // Classic 3-reel
+let selectedMachine: MachineConfig = MACHINES[0];
 let currentBet = selectedMachine.defaultBet;
+
+// Platform detection
+let platform: 'telegram' | 'discord' | 'browser' = 'browser';
 
 async function main(): Promise<void> {
   UI.setStatus('Connecting…');
@@ -49,30 +59,39 @@ async function main(): Promise<void> {
     onMachineChange: handleMachineChange,
     onBetChange: handleBetChange,
     onVolumeChange: (v) => Sound.setVolume(v),
+    onBuyCredits: handleBuyCredits,
   });
 
-  // Setup volume control
   UI.setupVolume();
   UI.setVolume(Sound.getVolume());
-
-  // Render machine selector (will appear after entering game)
   UI.renderMachineSelector(MACHINES, selectedMachine.id);
 
-  // Try Discord SDK
+  // ── Detect platform ───────────
+  const tgOk = initTelegram();
+  if (tgOk && getTelegramUser()) {
+    platform = 'telegram';
+    await enterGame(toUserInfo(getTelegramUser()!));
+    return;
+  }
+
   const discordOk = await initDiscord();
-  if (!isInDiscord()) {
-    UI.setStatus('Playing in browser — enter a name to start');
-    UI.setSplashMode('browser');
+  if (isInDiscord()) {
+    platform = 'discord';
+    if (discordOk && getDiscordUser()) {
+      await enterGame(getDiscordUser()!);
+      return;
+    }
+    UI.setStatus('Authorizing with Discord…');
+    UI.setSplashMode('discord');
+    UI.showBuyCredits(false);
     return;
   }
 
-  if (discordOk && getUser()) {
-    await enterGame(getUser()!);
-    return;
-  }
-
-  UI.setStatus('Authorizing with Discord…');
-  UI.setSplashMode('discord');
+  // Fallback: browser mode
+  platform = 'browser';
+  UI.setStatus('Playing in browser — enter a name to start');
+  UI.setSplashMode('browser');
+  if (!tgOk) UI.showBuyCredits(false);
 }
 
 // ── Auth handlers ───────────────────────────────────
@@ -81,8 +100,8 @@ async function handleDiscordAuth(): Promise<void> {
   UI.setStatus('Authorizing…');
   UI.showAuthButton(false);
   const ok = await authorizeDiscord();
-  if (ok && getUser()) {
-    await enterGame(getUser()!);
+  if (ok && getDiscordUser()) {
+    await enterGame(getDiscordUser()!);
   } else {
     UI.setStatus('Discord auth failed — try browser mode instead');
     UI.setSplashMode('browser');
@@ -109,6 +128,12 @@ async function enterGame(u: UserInfo): Promise<void> {
   UI.renderBet(currentBet, selectedMachine.minBet, selectedMachine.maxBet);
   UI.showGame();
   UI.setActiveMachine(selectedMachine.id);
+  UI.showBuyCredits(platform === 'telegram');
+
+  // Show Telegram close button only in TG
+  if (platform === 'telegram') {
+    UI.showCloseButton(true);
+  }
 
   // Initialise empty reels
   UI.renderReels([], [], selectedMachine.columns, selectedMachine.rows);
@@ -138,17 +163,11 @@ function handleMachineChange(machineId: string): void {
   const machine = MACHINES.find((m) => m.id === machineId);
   if (!machine) return;
   selectedMachine = machine;
-
-  // Clamp current bet to new machine's range
   currentBet = Math.max(machine.minBet, Math.min(machine.maxBet, currentBet));
-
   UI.setActiveMachine(machineId);
   UI.renderBet(currentBet, machine.minBet, machine.maxBet);
-
-  // Clear reels and result
   UI.renderReels([], [], machine.columns, machine.rows);
   UI.showResult(0, null, null);
-
   Sound.playCoin();
 }
 
@@ -178,32 +197,25 @@ async function handleSpin(): Promise<void> {
   isSpinning = true;
   UI.setSpinning(true);
 
-  // Deduct bet
   playerBalance -= currentBet;
   UI.updateBalance(playerBalance);
 
   Sound.playLever();
   Sound.startSpinSound();
 
-  // Generate spin result
   const result = spin(selectedMachine);
   const winCredits = result.winAmount * currentBet;
-
   const { columns, rows } = selectedMachine;
 
-  // Animate reels
   UI.animateSpin(result.symbols, result.winningCells, columns, rows, async () => {
     Sound.stopSpinSound();
 
-    // Staggered reel-stop sounds
     for (let i = 0; i < columns; i++) {
       setTimeout(() => Sound.playReelStop(), i * 100);
     }
 
-    // Show result
     UI.showResult(winCredits, result.winType, result.paylineName);
 
-    // Play appropriate sound
     if (winCredits > 0) {
       if (winCredits >= currentBet * 50) {
         Sound.playBigWin();
@@ -215,14 +227,12 @@ async function handleSpin(): Promise<void> {
       Sound.playLose();
     }
 
-    // Update balance
     if (winCredits > 0) {
       playerBalance += winCredits;
       UI.updateBalance(playerBalance);
       Sound.playCoin();
     }
 
-    // Persist
     if (user) {
       const newBalance = await updateBalance(user.id, winCredits - currentBet);
       playerBalance = newBalance;
@@ -232,6 +242,47 @@ async function handleSpin(): Promise<void> {
     isSpinning = false;
     UI.setSpinning(false);
   });
+}
+
+// ── Buy Credits (Telegram Stars) ────────────────────
+
+async function handleBuyCredits(): Promise<void> {
+  if (!user) return;
+  const { openStarsInvoice, showAlert } = await import('./telegram');
+  const { createInvoiceLink } = await import('./bot');
+
+  try {
+    // Show pricing options
+    const price = await UI.showPricingModal();
+    if (!price) return; // user cancelled
+
+    // Get the invoice link from the bot backend
+    const invoiceLink = await createInvoiceLink(
+      price.stars,
+      price.credits,
+      user.id
+    );
+
+    if (!invoiceLink) {
+      showAlert('Could not create invoice. Try again later.');
+      return;
+    }
+
+    const paid = await openStarsInvoice(invoiceLink);
+    if (paid) {
+      showAlert(`✅ ${price.credits} credits added to your account!`);
+      // Balance will be updated when the webhook confirms payment
+      // But optimistically update:
+      playerBalance += price.credits;
+      UI.updateBalance(playerBalance);
+      if (user) await addCredits(user.id, price.credits);
+    } else {
+      showAlert('Payment cancelled or failed.');
+    }
+  } catch (e) {
+    console.error('Buy credits error:', e);
+    showAlert('Something went wrong. Try again.');
+  }
 }
 
 // ── Chat handler ────────────────────────────────────
