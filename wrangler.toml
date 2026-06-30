@@ -1,0 +1,12 @@
+name = "casino"
+main = "src/worker.js"
+compatibility_date = "2025-04-01"
+
+# Build command run by wrangler deploy
+build_command = "npm run build"
+
+[assets]
+directory = "dist"
+
+[vars]
+TG_MINI_APP_URL = "https://casino.walusimbileon2.workers.dev"
